@@ -1,0 +1,11 @@
+N,~,A,+,alpha,mu,n,Gamma,a,0,B
+Delta,P,neq,beta,nu,o,*,b,1,C,Q
+Theta,-,p,gamma,xi,2,c,(,D,R,Lambda
+pi,d,3,q,delta,/,),E,Pi,S,int
+rho,4,r,e,epsilon,[,infty,F,T,Sigma,sigma
+f,varepsilon,5,s,{,sqrt,G,U,Upsilon,tau,g
+zeta,6,},t,H,V,phi,upsilon,u,eta,h
+7,.,W,rightarrow,Psi,phi,v,I,theta,8,i
+X,w,Omega,varphi,vartheta,j,J,9,!,K,Y
+<,chi,x,k,iota,mathrm{l},Z,psi,L,y,kappa
+l,mathrm{i},M,m,mathrm{m},omega,lambda,z
