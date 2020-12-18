@@ -209,7 +209,7 @@ while i <= num_chars
             eq_string = [eq_string detected];
         case 1
             % Make sure the overlap is the next char
-            assert(overlap_idx(i+1))
+%             assert(overlap_idx(i+1))
             % Check if overlap is trivial
             overlap_ul = boxes(1,i+1);
             if abs(overlap_ul-ur_x_coord) <= 1

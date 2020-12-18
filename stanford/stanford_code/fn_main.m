@@ -26,7 +26,8 @@ load('red_charPalette_withText_demo2.mat');
 load('red_charPalette_Classifier_demo2.mat');
 
 %% Read in desired equation
-fileName = 'Clean/eq1_h.jpg';
+close all;
+fileName = 'Clean/eq1_hr.jpg';
 showFigs=true;
 outputName='../test';
 dir = strcat(pwd,'/Equations/');
@@ -37,13 +38,14 @@ if(showFigs)
 end
 
 %% Optimize page and binarize
+close all;
 eq_bin = fn_lighting_compensation(eq);
 if(showFigs)
     figure(2);                                                              %%%binarize IMAGE
     imshow(eq_bin);
 end
 
-[eq_deskew, ~] = fn_deskew2(eq_bin,true,true, 5);
+[eq_deskew, ~] = fn_deskew2(eq_bin,true);
 
 if(showFigs)
     figure(3);
@@ -51,14 +53,17 @@ if(showFigs)
 end
 
 %% Segment Equation Characters and Create Identifier
-if(showFigs)
+if(true)
     eq_chars = fn_segment(eq_deskew,true,4);
 else
     eq_chars = fn_segment(eq_deskew);
 end
-for i = 1:length(eq_chars)
+for i = 1:1
    eq_chars(i).ident = fn_createIdent(eq_chars(i).img); 
 end
+%% 
+figure(100)
+imshow(eq_chars(1).img)
 
 %% Match Characters (pass in struct of segmented chars and related info. 
 for i = 1:length(eq_chars)

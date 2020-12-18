@@ -1,4 +1,4 @@
-function [ characters ] = fn_segment(eq, showFigs, figNum)
+function [ characters ] = segmentation(eq)
 %fn_segment Segment and return characters from binary image
 %
 %   eq - A binary image [0,1] with desired characters in black, bkgrd white.
@@ -120,6 +120,7 @@ characters(size(loc,1)).centroid = [];
 % Extract each character from binary image based on bounding boxes
 %   If there are issues with overlapping characters into nearby bounding
 %   boxes, can use the Convex Hulls to create masks around desired char
+disp(boundingboxes);
 
 for i = 1 : size(loc,1)
     characters(i).centroid = loc(i,:);
