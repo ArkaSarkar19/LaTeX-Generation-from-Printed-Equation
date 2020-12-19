@@ -485,7 +485,6 @@ while i <= length(chars)
     end
     i = i+1;
     
-    new_chars(i)
 end
 
 end

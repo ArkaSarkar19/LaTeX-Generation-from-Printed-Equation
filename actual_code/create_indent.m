@@ -96,7 +96,8 @@ for i = 1:k
     if(~isempty(circVec))
         % Count number of sections of at least 2 0s. This is the number of
         % character sections the circle goes through.
-        cnt = strfind([1 1 circVec'],[0 0]);
+        arr = [1 1 circVec'];
+        cnt = getcount(arr);
         coding(i).count = length(cnt(diff([1 cnt])~=1));
 
         % Save count to identifier vector
@@ -150,7 +151,19 @@ eta_mat = SI_Moment(inverse_image) ;
 hu_arr = Hu_Moments(eta_mat);
 end
 
+function count_zero = getcount(arr)
 
+l = length(arr);
+ctr = 1;
+count_zero = zeros(l);
+for i=1:l-1
+    if(arr(i) == 0 && arr(i+1) == 0)
+        count_zero(ctr) = i;
+        ctr = ctr + 1;
+    end
+end
+count_zero = count_zero(1:ctr-1);
+end
 
 
 
