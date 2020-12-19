@@ -30,56 +30,14 @@ close all;
 [ characters_image,characters_centroids,characters_boxes ] = segmentation(eq_deskew,true,4);
 characters_ident(size(characters_image,1)).ident=[];
 
-for i = 1:length(characters_image)
-   character_ident(i).ident = create_indent(characters_image(i).img); 
-end
-
-%% 
-% close all;
 % for i = 1:length(characters_image)
-%     idx_matched = knnsearch(X_orig(:,1:length(character_ident(1).ident)),...
-%             character_ident(i).ident,'distance','cityblock');
-%     % Set the matched character value
-%     character_ident(i).char = chars(X_orig(idx_matched,end)).char;
-%      
-%  
-%   
-%     % Code to show input characters and their determined matches
-%     if(true)
-%         figure(6);
-%         subplot(2,length(characters_image),i);
-%         imshow(characters_image(i).img);
-%         title('Input');
-%         subplot(2,length(characters_image),i+length(characters_image));
-%         imshow(chars(X_orig(idx_matched,end)).img);
-%         if(character_ident(i).char(1) == '\')
-%             printChar = strcat('\',character_ident(i).char);
-%         else
-%            printChar = character_ident(i).char;
-%         end
-%         str = sprintf('Match: %s',printChar);
-%         title(str);
-%     end
+%    character_ident(i).ident = create_indent(characters_image(i).img); 
 % end
-
-%% Pass struct of segmented characters (eq_chars) with matched character 
-% data to equation creator
-% 
-% EqStruct.characters = eq_chars;
-% eq_string = fn_assemble_eq(EqStruct);
-
-%% Output LaTeX Code
-% writeTex(eq_string, strcat(dir,outputName));
-% clc
-
 %% 
-
 
 close all;
 for i = 1:length(characters_image)
-%     idx_matched = knnsearch(X_orig(:,1:length(character_ident(1).ident)),...
-%             character_ident(i).ident,'distance','cityblock');
-    % Set the matched character value
+
     
     idx_matched = similarity_function(character_ident(i).ident, "Manhattan");
     character_ident(i).char = chars(X_orig(idx_matched,end)).char;
@@ -106,6 +64,22 @@ end
 
 
 
-% similarity_function(characters_image, "Manhattan");
+
+%% Pass struct of segmented characters (eq_chars) with matched character 
+
+characters_boxes
+character_ident(1).ident(1)
+blank.val=character_ident;
+eq_string = assemble_eq(blank,characters_boxes,characters_centroids);
+%% 
+
+% Output LaTeX Code
+writeTex(eq_string, strcat(dir,outputName));
+clc
+
+%% 
+
+
+
 
 

@@ -1,4 +1,4 @@
-function eq_string = fn_assemble_eq( EqStruct )
+function eq_string = assemble_eq( characters,boundingboxes,centroids )
 %AssembleEquation Assembles a string representation of an equation given a
 % struct of extracted character information. The output eq_string will be
 % in LaTeX form.
@@ -28,7 +28,7 @@ space = 10;
 eq_string = '';
 
 % Extract the character array.
-chars = EqStruct.characters;
+chars = characters.val
 num_chars = length(chars);
 
 
@@ -37,9 +37,9 @@ num_chars = length(chars);
 % Upper left x, Upper left y, width, height
 boxes = zeros(4,num_chars);
 for i = 1:num_chars
-    boxes(:,i) = chars(i).boundingbox;
+    boxes(:,i) = boundingboxes(i,:);
 end
-
+boxes
 % Make sure characters are sorted by upper left bound
 [~, idxs] = sort(boxes(1,:));
 chars = chars(idxs);
@@ -183,7 +183,7 @@ while i <= num_chars
                     prev_fraction = false;
                     
                     % Store centroid to check for exponents
-                    prev_centroid_y_coord = chars(i).centroid(2);
+                    prev_centroid_y_coord = centroids(i,2);
                     
                     if i+1<= num_chars
                         dist_to_next = boxes(1,i+1)-ur_x_coord;
@@ -197,7 +197,7 @@ while i <= num_chars
                 prev_fraction = false;
                 
                 % Store centroid to check for exponents
-                prev_centroid_y_coord = chars(i).centroid(2);
+                prev_centroid_y_coord = centroids(i,2);
                 
                 if i+1<= num_chars
                     dist_to_next = boxes(1,i+1)-ur_x_coord;
@@ -209,7 +209,7 @@ while i <= num_chars
             eq_string = [eq_string detected];
         case 1
             % Make sure the overlap is the next char
-%             assert(overlap_idx(i+1))
+            assert(overlap_idx(i+1))
             % Check if overlap is trivial
             overlap_ul = boxes(1,i+1);
             if abs(overlap_ul-ur_x_coord) <= 1
@@ -237,7 +237,7 @@ while i <= num_chars
                     eq_string = [eq_string '='];
                     
                     % Store average y_coord between the 2 equal bars
-                    prev_centroid_y_coord = 1/2*(chars(i).centroid(2)+chars(i+1).centroid(2));
+                    prev_centroid_y_coord = 1/2*(centroids(i,2)+centroids(i+1,2));
                 end
                 i = i+1; % Skip next char
             end

@@ -73,15 +73,27 @@ end
 
 %% Only show figures if boolean passed to show them
 if showFigs
+    figure();
+
+    imshow(eq_edges);
+
     for i = 1:size(centroids, 1) 
-        figure();
-        imshow(eq_edges);
-        
-        rectangle('position',boundingboxes(i,:),'Edgecolor','g')
+        hold on ;
         x = centroids(i,1);
         y = centroids(i,2);
         text(x, y, '*' ,'Color', 'yellow', 'FontSize', 14);
+        hold off;
         
+    end
+    figure();
+
+    imshow(eq_edges);
+
+    for i = 1:size(centroids, 1) 
+        hold on ;
+        rectangle('position',boundingboxes(i,:),'Edgecolor','g')
+       
+        hold off;
         
     end
 
