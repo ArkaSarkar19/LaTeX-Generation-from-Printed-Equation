@@ -30,9 +30,9 @@ close all;
 [ characters_image,characters_centroids,characters_boxes ] = segmentation(eq_deskew,true,4);
 characters_ident(size(characters_image,1)).ident=[];
 
-% for i = 1:length(characters_image)
-%    character_ident(i).ident = create_indent(characters_image(i).img); 
-% end
+for i = 1:length(characters_image)
+   character_ident(i).ident = create_indent(characters_image(i).img); 
+end
 %% 
 
 close all;
