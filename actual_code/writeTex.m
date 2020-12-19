@@ -1,8 +1,6 @@
-function [ name ] = writeTex(eq_string, fileName )
-%writeTex Write the passed equation string into a compilable .tex file
-%   with passed filename.
+function [ name ] = Final_code(final_string )
 
-fileID = fopen(strcat(fileName,'.tex'),'w');
+
 
 header = {'\\documentclass[20pt]{report}\n'
     '\\DeclareMathSizes{12}{30}{30}{30}\n'
@@ -15,7 +13,7 @@ for i = 1:length(header)
 end
 
 % Replace \ with with \\
-fprintf(fileID,strrep(eq_string,'\','\\'));
+fprintf(fileID,strrep(final_string,'\','\\'));
 
 footer = {'\n\\)\n'
     '\\end{center}\n'

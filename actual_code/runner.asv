@@ -1,7 +1,7 @@
 %% 
 close all;
 clear
-fileName = 'Clean/eq4_hr.jpg';
+fileName = 'Clean/eq1_hr.jpg';
 showFigs=true;
 outputName='../test';
 dir = strcat(pwd,'/Equations/');
@@ -24,7 +24,7 @@ close all;
 
 
 
-%% 
+%% Segment Equation Characters and Create Identifier
 
 close all;
 [ characters_image,characters_centroids,characters_boxes ] = segmentation(eq_deskew);
@@ -46,35 +46,44 @@ for i = 1:length(characters_image)
      
  
   
+    % Code to show input characters and their determined matches
     
     if(true)
-        figure("Name",strcat("character",int2str(i)))
+        figure("Name",strcat("character",str(i)))
         imshow(characters_image(i).img);
         title('Input');
         
-       figure("Name",strcat("Matched character",int2str(i)))
-        title('Matched');
+       figure("Name",strcat("Matched character",str(i)))
 
         imshow(chars(X_orig(idx_matched,end)).img);
-                title('Matched');
-
-       
+        if(character_ident(i).char(1) == '\')
+            printChar = strcat('\',character_ident(i).char);
+        else
+           printChar = character_ident(i).char;
+        end
+        str = sprintf('Match: %s',printChar);
+        title(str);
     end
 end
 
 
 
 
-%% 
-close all;
+%% Pass struct of segmented characters (eq_chars) with matched character 
+
+characters_boxes
+character_ident(1).ident(1)
 blank.val=character_ident;
 clc
-final_string = Form_equation(blank,characters_boxes,characters_centroids);
+eq_string = assemble_eq(blank,characters_boxes,characters_centroids);
 %% 
-final_string
 
+% Output LaTeX Code
+writeTex(eq_string, strcat(dir,outputName));
+clc
 
 %% 
+
 
 
 

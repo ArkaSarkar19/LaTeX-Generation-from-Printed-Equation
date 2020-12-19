@@ -1,46 +1,37 @@
-function [ characters_image,characters_centroids,characters_boxes ] = segmentation(eq, showFigs, figNum)
-%fn_segment Segment and return characters from binary image
+function [ characters_image,characters_centroids,characters_boxes ] = segmentation(img)
 
 
 
-% Invert image
-eq_inv = ones(size(eq)) - eq;
 
-% Create Edge Map
-se = ones(3,3);
 
-exp = imerode(eq_inv, se);
+exp = imerode(ones(size(img)) - img, ones(3,3));
 
-figure, imshow(exp, []);
-title("erode");
+figure("Name","Eroded image"), imshow(exp, []);
 
-eq_edges = xor(exp, eq_inv);
-
-figure, imshow(eq_edges, []);
-title("eq edges");
-% Find Centroid for x/y location of each character
-s = regionprops(eq_edges, 'Centroid');
-bb = regionprops(eq_edges, 'BoundingBox');
+img_edges = xor(imerode(ones(size(img)) - img, ones(3,3)), ones(size(img)) - img);
 
 
 
-% Matrix of centroid locations
-centroids = cat(1, s.Centroid)
-% Matrix of boundingbox corner and sizes
-boundingboxes = cat(1, bb.BoundingBox);
+Ctr = regionprops(img_edges, 'Centroid');
+BoundingB = regionprops(img_edges, 'BoundingBox');
+
+
+
+centroids = cat(1, Ctr.Centroid);
+
+boundingboxes = cat(1, BoundingB.BoundingBox);
 boundingboxes = floor(boundingboxes);
 boundingboxes(:,3:4) = boundingboxes(:,3:4) + 1;
 
 
-% Init struct to contain extracted characters and their x/y locations
 characters_image(size(centroids,1)).img=[];
 
-dummy=zeros(size(centroids,1),1)
+dummy=zeros(size(centroids,1),1);
 for i =1:size(dummy,1)
     for j=1:size(dummy,1)
         if (i~=j)
             if ((boundingboxes(i,2)<=boundingboxes(j,2))&&(boundingboxes(i,2)+boundingboxes(i,4)>boundingboxes(j,2)+boundingboxes(j,4))&&(boundingboxes(i,1)<=boundingboxes(j,1))&&(boundingboxes(i,1)+boundingboxes(i,3)>boundingboxes(j,1)+boundingboxes(j,3)))
-                dummy(j)=1
+                dummy(j)=1;
             end
 
         end
@@ -48,7 +39,7 @@ for i =1:size(dummy,1)
     
 
 end
-counter=0
+counter=0;
 for i=1:size(dummy)
     if (dummy(i)==1)
         characters_image(i-counter)=[];
@@ -64,40 +55,37 @@ end
 
 for i = 1 : size(centroids,1)
     
-    characters_image(i).img = eq(boundingboxes(i,2):boundingboxes(i,2)+boundingboxes(i,4),boundingboxes(i,1):boundingboxes(i,1)+boundingboxes(i,3),:);
+    characters_image(i).img = img(boundingboxes(i,2):boundingboxes(i,2)+boundingboxes(i,4),boundingboxes(i,1):boundingboxes(i,1)+boundingboxes(i,3),:);
     
     
 end
 
 
 
-%% Only show figures if boolean passed to show them
-if showFigs
-    figure();
+figure("Name","Centroids");
 
-    imshow(eq_edges);
+imshow(img_edges);
 
-    for i = 1:size(centroids, 1) 
-        hold on ;
-        x = centroids(i,1);
-        y = centroids(i,2);
-        text(x, y, '*' ,'Color', 'yellow', 'FontSize', 14);
-        hold off;
-        
-    end
-    figure();
-
-    imshow(eq_edges);
-
-    for i = 1:size(centroids, 1) 
-        hold on ;
-        rectangle('position',boundingboxes(i,:),'Edgecolor','g')
-       
-        hold off;
-        
-    end
+for i = 1:size(centroids, 1) 
+    hold on ;
+    x = centroids(i,1);
+    y = centroids(i,2);
+    text(x, y, '*' ,'Color', 'red', 'FontSize', 10);
+    hold off;
 
 end
+figure("Name","Bounding Boxes");
+
+imshow(img_edges);
+
+for i = 1:size(boundingboxes, 1) 
+    hold on ;
+    rectangle('position',boundingboxes(i,:),'Edgecolor','y')
+
+    hold off;
+
+end
+
 characters_centroids=centroids;
 characters_boxes=boundingboxes;
 end

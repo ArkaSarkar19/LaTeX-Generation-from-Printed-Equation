@@ -1,4 +1,4 @@
-function [ identifier ] = create_indent(image)
+function [ identifier ] = Find_characteristics(image)
 
 showFigs = true;
 % Parameters
