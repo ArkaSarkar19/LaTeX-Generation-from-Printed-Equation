@@ -35,7 +35,6 @@ for i = 1:length(characters_image)
 end
 
 %% 
-close all;
 for i = 1:length(eq_chars)
     idx_matched = knnsearch(X_orig(:,1:length(character_ident(1).ident)),...
             character_ident(i).ident,'distance','cityblock');
@@ -45,17 +44,17 @@ for i = 1:length(eq_chars)
  
   
     % Code to show input characters and their determined matches
-    if(true)
+    if(showFigs)
         figure(6);
-        subplot(2,length(characters_image),i);
-        imshow(characters_image(i).img);
+        subplot(2,length(eq_chars),i);
+        imshow(eq_chars(i).img);
         title('Input');
-        subplot(2,length(characters_image),i+length(characters_image));
+        subplot(2,length(eq_chars),i+length(eq_chars));
         imshow(chars(X_orig(idx_matched,end)).img);
-        if(character_ident(i).char(1) == '\')
-            printChar = strcat('\',character_ident(i).char);
+        if(eq_chars(i).char(1) == '\')
+            printChar = strcat('\',eq_chars(i).char);
         else
-           printChar = character_ident(i).char;
+           printChar = eq_chars(i).char;
         end
         str = sprintf('Match: %s',printChar);
         title(str);
