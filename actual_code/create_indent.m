@@ -1,116 +1,89 @@
-function [ identifier ] = create_indent(char, printIdent, showFigs)
-%createIdent - Create the identifier vector with normalized central moment
-% of inertia, the number of chracter crossings for each concentric circle,
-% and the 2 largest arc length ratio for k-1 largest concentric circles.
-% Also uses the other 6 Hu moments as part of the identifier.
-%   
-%   char - Binary image of character to create identifier for. Assumes
-%       character is black.
-%   printIdent - Prints out central moment, counts and ratio identifier
-%   showFigs - Set to true to show extracted circles and figure with
-%       circles overlaid.
-%
-%   "coding" is a struct that contains the extracted vectors, counts, and 
-%       and rations but is not currently returned.
-%   
-%   Assumes: Character is binary image (character = 0) tightly cropped.
+function [ identifier ] = create_indent(image)
 
-if nargin == 1
-    printIdent = false;
-    showFigs = false;
-elseif nargin == 2
-    showFigs = false;
-end
-
+showFigs = true;
 % Parameters
 k = 8;
 % IN2, R1-R7, D2-D8, 6 Hu Moments
 identifier = zeros(1,2*k+6);
 
-char_inv = ones(size(char)) - char;
+inverse_image = ones(size(image)) - image;
 
-figure, imshow(char, []);
-title("char")
+figure, imshow(image, []);
+title("image")
 
-figure, imshow(char_inv, []);
-title("char_inv")
+figure, imshow(inverse_image, []);
+title("inverse_image")
 % If white border on any edge, pad with more 1s
 pad = 3;
 % top
-if(sum(char_inv(1,:)) == 0)
-    char = [ones(pad,size(char,2)) ;char];
+if(sum(inverse_image(1,:)) == 0)
+    image = [ones(pad,size(image,2)) ;image];
 end
 % bottom
-if(sum(char_inv(end,:)) == 0)
-    char = [char; ones(pad,size(char,2))];
+if(sum(inverse_image(end,:)) == 0)
+    image = [image; ones(pad,size(image,2))];
 end
 % left
-if(sum(char_inv(:,1)) == 0)
-    char = [ones(size(char,1),pad) char];
+if(sum(inverse_image(:,1)) == 0)
+    image = [ones(size(image,1),pad) image];
 end
 % right
-if(sum(char_inv(:,end)) == 0)
-    char = [char ones(size(char,1),pad)];
+if(sum(inverse_image(:,end)) == 0)
+    image = [image ones(size(image,1),pad)];
 end
 % Recalculate for centroid
-char_inv = ones(size(char)) - char;
+inverse_image = ones(size(image)) - image;
 
 % Total number of pixels in character
-N = sum(~char(:));
+N = sum(~image(:));
 % Find x,y positions of 0 elements (character)
-[y, x] = find(~char);
+[y, x] = find(~image);
 
 % Find centroid
-cent = regionprops(char_inv,'centroid');
-cent = cat(1, cent.Centroid);
-cent_x = cent(1);
-cent_y = cent(2);
-cent_x
-% Find central moment of inertia
-I = sum((x - cent_x).^2 + (y - cent_y).^2);
-IN2 = I / N^2;
-identifier(1) = IN2;
-if(printIdent)
-   fprintf('Normalized Central Moment: %.4f\n', IN2); 
-end
+centroid = regionprops(inverse_image,'centroid');
+centroid = cat(1, centroid.Centroid);
+centroid_x = centroid(1);
+centroid_y = centroid(2);
 
-% Extract Circular Topology Template and Diameter Ratio
-y = size(char,1);
-x = size(char,2);
-dr = max(max(x - cent_x,cent_x), max(y - cent_y,cent_y)) / (k+1);
+moment_of_inertia = sum((x - centroid_x).^2 + (y - centroid_y).^2) /sum(~image(:))^2;;
+identifier(1) = moment_of_inertia;
+
+hu_moments =  calculate_hu_moments(inverse_image);
+identifier(2*k+1:end) = hu_moments(2:end);
+
+
+y = size(image,1);
+x = size(image,2);
+dr = max(max(x - centroid_x,centroid_x), max(y - centroid_y,centroid_y)) / (k+1);
 [c, r] = meshgrid(1:x, 1:y);
 
-% Display Extracted circles
-if(showFigs)
-    figure(1);
-    % Create copy of character to display circles overlaid
-    tempcirc = char;
-end
 
-% Init coding vector for storing extra information
 coding(k).circVec=[];
 for i = 1:k
     rad = dr * i;
     % Create circle line of logical 1s to extract template
-    C = xor(sqrt((c-cent_x).^2+(r-cent_y).^2)<=rad, ...
-        sqrt((c-cent_x).^2+(r-cent_y).^2)<=(rad-1));
+    rad1 = sqrt((c-centroid_x).^2+(r-centroid_y).^2);
+    rad2 = sqrt((c-centroid_x).^2+(r-centroid_y).^2);
+    Circle = xor(rad1<=rad, rad2<=(rad-1));
     % Extract circular template linear indices (sort based on theta)
-    cidx = find(C);
+    cidx = find(Circle);
     % Create matrix linear indices, corresponding x and y values
-    vals = [cidx c(cidx)-cent_x r(cidx)-cent_y zeros(size(cidx,1),1)];
+    x = c(cidx)-centroid_x;
+    y = r(cidx)-centroid_y;
+    vals = [cidx x y zeros(size(cidx,1),1)];
     % Add corresponding theta values
-    [TH, ~] = cart2pol(vals(:,2), vals(:,3));
-    vals(:,4) = TH;
+    [thetha, rho] = cart2pol(vals(:,2), vals(:,3));
+    vals(:,4) = thetha;
     % Sort based on theta values so in order around circle
     [~, order] = sort(vals(:,4));
     sortedvals = vals(order,:);
     % Use linear indices to extract desired values in correct theta order
-    circVec = char(sortedvals(:,1));
+    circVec = image(sortedvals(:,1));
     
     % Show circles overlaid on character
-    if(showFigs)
-        tempcirc(C) = .5;
-    end
+%     if(showFigs)
+%         tempcirc(Circle) = .5;
+%     end
     
     % Extract values from character based on circular indices. Start at
     %   0deg going CCW.
@@ -162,23 +135,167 @@ for i = 1:k
                 identifier(k+i) = coding(i).ratio;
             end
         end
-        if(printIdent)
-            fprintf('Count=%d, d2=%d, d1=%d, c=%d, ratio = %.4f\n',...
-                coding(i).count,d2,d1,circ,coding(i).ratio);
-        end
+
     end
 end
 
-% Add Hu Moments to end of Identifier (work on inverse so char is 0)
-eta_mat = SI_Moment(char_inv) ;
-hu_arr = Hu_Moments(eta_mat);
-% 1st moment is IN2, above, in first slot
-identifier(2*k+1:end) = hu_arr(2:end);
 
-% Show character with circles overlaid
-if(showFigs)
-    figure(2);
-    imshow(tempcirc);
 end
 
+
+
+
+function hu_arr = calculate_hu_moments(inverse_image)
+eta_mat = SI_Moment(inverse_image) ;
+hu_arr = Hu_Moments(eta_mat);
+end
+
+
+
+
+
+%% 
+% Author:   Vishnu Muralidharan
+% University of Alabama in Huntsville
+% Copyright (c) 2015, Vishnu Muralidharan
+% All rights reserved.
+
+function eta = SI_Moment(image, mask)
+% Function to calculate the scale-invariant moment of interested image region
+% Author:   Vishnu Muralidharan
+% University of Alabama in Huntsville
+% Copyright (c) 2015, Vishnu Muralidharan
+% All rights reserved.
+
+
+% Inputs:   image: image: input image for which moments need to be calculated
+%           mask: specifying this allows you to calculate moments for a
+%           specified region
+%           
+% Outputs:  cen_mmt = central moment of the specifed order fot the image
+% Reference:  Visual Pattern Recognition by Moment Invariants
+
+
+image = double(image);
+if ~exist('mask','var')
+    mask = ones(size(image,1),size(image,2)); %if mask is not defined select the whole image
+end
+
+% computation of central moments upto order order 3
+for i=1:1:4
+    for j=1:1:4
+        nu(i,j) = Centr_Moment(image, mask,i-1,j-1);
+    end
+end
+
+% computation of scale invariant moments using central monets of upto order
+% 3
+eta = zeros(3,3);
+for i=1:1:4
+    for j=1:1:4
+        if i+j >= 4
+            eta(i,j) = (double(nu(i,j))/(double(nu(1,1)).^(double((i+j)/2)))); %scale invariant moment matrix
+        end
+    end
+end
+end
+
+
+function inv_moments = Hu_Moments(eta)
+% Function to calculate the Hu's moments of interested image region
+% Author:   Vishnu Muralidharan
+% University of Alabama in Huntsville
+% Copyright (c) 2015, Vishnu Muralidharan
+% All rights reserved.
+
+
+% Inputs:   eta: scale-invariant moment matrix of order 3
+% Outputs:  inv_moments = array containing 7 invariant Hu's moments
+% Reference:  Visual Pattern Recognition by Moment Invariants
+
+
+%Calculation of various invariant Hu's moments
+inv_moments(1) = eta(3,1) + eta(1,3);
+inv_moments(2) = (eta(3,1) - eta(1,3))^2 + (4*eta(2,2)^2);
+inv_moments(3) = (eta(4,1) - 3*eta(2,3))^2 + (3*eta(3,2) - eta(1,4))^2;
+inv_moments(4) = (eta(4,1) + eta(2,3))^2 + (eta(3,1) + eta(1,4))^2;
+inv_moments(5) = (eta(4,1) - 3*eta(2,3))*(eta(4,1) + eta(2,3))*((eta(4,1) + eta(2,3))^2 - 3*((eta(3,2) + eta(1,4))^2)) + (3*(eta(3,2) - eta(1,4)))*(eta(3,2) + eta(1,4))*(3*(eta(4,1) + eta(2,3))^2 - (eta(3,2) + eta(1,4))^2);
+inv_moments(6) = (eta(3,1) - eta(1,3))*((eta(4,1)+eta(2,3))^2 - (eta(3,2)+ eta(1,4))^2) + 4*eta(2,2)*((eta(4,1) + eta(2,3))*(eta(3,2) + eta(1,4)));
+inv_moments(7) = (3*eta(3,2) - eta(1,4))*(eta(4,1) + eta(2,3))*((eta(4,1) + eta(2,3))^2 - 3*(eta(3,2)-eta(1,4))^2) - (eta(4,1) - 3*eta(2,3))*(eta(3,2) + eta(1,4))*(3*(eta(4,1) + eta(2,3))^2 - (eta(3,2) + eta(1,4))^2);
+
+end
+
+
+function cen_mmt = Centr_Moment(image,mask,p,q)
+% Function to calculate the central moment of interested image region
+% Author:   Vishnu Muralidharan
+% University of Alabama in Huntsville
+% Copyright (c) 2015, Vishnu Muralidharan
+% All rights reserved.
+
+
+% Inputs:   image: image: input image for which moments need to be calculated
+%           mask: specifying this allows you to calculate moments for a
+%           specified region
+%           p,q: order of moments to be calculated
+% Outputs:  cen_mmt = central moment of the specifed order fot the image
+% Reference:  Visual Pattern Recognition by Moment Invariants
+
+
+if ~exist('mask','var')
+    mask = ones(size(image,1),size(image,2)); %if mask is not spcified, select the whole image
+end
+
+image = double(image);
+
+%moments necessary to compute components of centroid
+m10 = moment(image,mask,1,0); 
+m01 = moment(image,mask,0,1);
+m00 = moment(image,mask,0,0);
+
+%components of centroid
+x_cen = floor(m10/m00);
+y_cen = floor(m01/m00);
+
+cen_mmt =0;
+
+for i=1:1:size(mask,1)
+    for j=1:1:size(mask,2)
+        if mask(i,j) == 1
+            cen_mmt = cen_mmt + (double(image(i,j))*((i-x_cen)^p)*((j-y_cen)^q)); %calculating central moment
+        end
+    end
+end
+end
+
+
+function m = moment(image,mask,p,q)
+% Function to calculate any ordinary moment of the intersted image region
+% Author:   Vishnu Muralidharan
+% University of Alabama in Huntsville
+% Copyright (c) 2015, Vishnu Muralidharan
+% All rights reserved.
+
+
+% Inputs:   image: input image for which moments need to be calculated
+%           mask: specifying this allows you to calculate moments for a
+%           specified region
+%           p,q: order of moments to be calculated
+% Outputs:  m = moment of the specifed order fot the image
+% Reference:  Visual Pattern Recognition by Moment Invariants
+
+
+if ~exist('mask','var')
+    mask = ones(size(image,1),size(image,2));   %if mask is not specified, select the whole image
+end
+
+image = double(image);
+m=0; 
+for i=1:1:size(mask,1)
+    for j=1:1:size(mask,2)
+        if mask(i,j) == 1
+            m = m + (double((image(i,j))*(i^p)*(j^q))) ; %moment calculation
+        end
+    end
+end
 end

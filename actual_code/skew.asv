@@ -21,6 +21,8 @@ P = houghpeaks(H,5,'threshold',ceil(0.3*max(H(:))));
 
 lines = houghlines(BW,T,rho,P,'FillGap',5,'MinLength',7);
 
+% edges = edge(bw_img);
+% [H,T,~] = hough(edges,'RhoResolution',1,'ThetaResolution', 0.1 );
 figure, imshow(bw_img), hold on
 max_len = 0;
 for k = 1:length(lines)
@@ -38,31 +40,32 @@ for k = 1:length(lines)
       xy_long = xy;
    end
 end
-plot(xy_long(:,1),xy_long(:,2),'LineWidth',2,'Color','red'); %%change color of the longest segment
+% highlight the longest line segment
+plot(xy_long(:,1),xy_long(:,2),'LineWidth',2,'Color','red');
 
-
+%% Current Implementation: Taking the orientation that appears most in the 
+%                           top four peaks
 
 orientations = P(:,2);
+% If all orientations are unique, take the top choice
 if length(unique(orientations)) == 4    
     dominant_orientation = orientations(1);
 else
     dominant_orientation = mode(P(:,2));
 end
-
-    
-deskewing_angle = T(dominant_orientation)-90;
-
 if (deskewing_angle<0)
-    deskewing_angle=mod(deskewing_angle,-90);
-else
-    deskewing_angle=mod(deskewing_angle,90);
+end
 
     
-end
+deskewing_angle = T(dominant_orientation)-90
+
+% Limit angle  to -45  to 45
+deskewing_angle=mod(deskewing_angle,-90);
 
 
 deskew_img = imrotate(bw_img,deskewing_angle,'bilinear');
-Mrot = ~imrotate(true(size(bw_img)),deskewing_angle,'bilinear');%to fix the background.
+
+Mrot = ~imrotate(true(size(bw_img)),deskewing_angle,'bilinear');
 deskew_img(Mrot&~imclearborder(Mrot)) = true;
 
 
