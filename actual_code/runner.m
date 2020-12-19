@@ -1,6 +1,6 @@
 %% 
 close all;
-fileName = 'Clean/eq5_hr.jpg';
+fileName = 'Clean/eq7_hr.jpg';
 showFigs=true;
 outputName='../test';
 dir = strcat(pwd,'/Equations/');
@@ -70,6 +70,7 @@ end
 characters_boxes
 character_ident(1).ident(1)
 blank.val=character_ident;
+clc
 eq_string = assemble_eq(blank,characters_boxes,characters_centroids);
 %% 
 

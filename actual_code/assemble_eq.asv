@@ -320,7 +320,7 @@ while i <= num_chars
                 
                 
                 blank.val=overlap_chars(denom_idx);
-                denom_str = assemble_eq(blank,overlap_boxes(:,denom_idx)',overlap_centroids(:,denom_idx)');
+                denom_str = assemble_eq(blank,overlap_boxes(:,denom_idx)',overlap_centroids(:,denom_idx));
                 
                 detected = ['\frac{' numer_str '}{' denom_str '}'];
                 
