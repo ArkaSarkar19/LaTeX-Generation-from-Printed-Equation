@@ -1,6 +1,7 @@
 %% 
 close all;
 clear
+clc
 fileName = 'wrong.jpg';
 Equation_image = imread(fileName);
 figure("Name","Original Image");                                                              
@@ -69,7 +70,8 @@ clc
 final_string = Form_equation(blank,characters_boxes,characters_centroids);
 %% 
 final_string
-
+figure("Name","Original Image");                                                              
+imshow(Equation_image);
 
 %% 
 
@@ -270,7 +272,7 @@ if(sum(inverse_image(:,end)) == 0)
     image = [image ones(size(image,1),pad)];
 end
 inverse_image = ones(size(image)) - image;
-
+Topo_circle=image;
 N = sum(~image(:));
 [y, x] = find(~image);
 
@@ -309,7 +311,7 @@ for i = 1:k
     circVec = image(sortedvals(:,1));
     
    
-    
+     Topo_circle(Circle) = .5;
     
     circVec = imopen(circVec,ones(2,1));
     
@@ -351,6 +353,8 @@ for i = 1:k
 
     end
 end
+figure();
+imshow(Topo_circle)
 
 
 end
@@ -614,7 +618,6 @@ while i <= num_chars
 
     detected = chars(i).char;
     
-    %% Check for overlaps
     top_left = boxes(1,i);
     top_right = top_left+boxes(3,i);
     
